@@ -18,11 +18,13 @@ import (
 
 var (
 	interval   time.Duration
+	timeout    time.Duration
 	_interface string
 )
 
 func init() {
 	flag.DurationVar(&interval, "interval", 1*time.Second, "interval")
+	flag.DurationVar(&timeout, "timeout", 1*time.Hour, "timeout")
 	flag.StringVar(&_interface, "interface", "", "network interface")
 }
 
@@ -60,7 +62,11 @@ func run() error {
 		ifaces[_interface] = struct{}{}
 	}
 
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, timeout+interval)
+	defer cancel()
+
+	ctx, cancel = signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
 	ticker := time.NewTicker(interval)
