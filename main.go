@@ -17,11 +17,13 @@ import (
 )
 
 var (
-	interval string
+	interval   time.Duration
+	_interface string
 )
 
 func init() {
-	flag.StringVar(&interval, "interval", "1s", "interval")
+	flag.DurationVar(&interval, "interval", 1*time.Second, "interval")
+	flag.StringVar(&_interface, "interface", "", "network interface")
 }
 
 func main() {
@@ -32,33 +34,36 @@ func main() {
 }
 
 func run() error {
-	_interval, err := time.ParseDuration(interval)
-	if err != nil {
-		return err
-	}
 	ifaceList, err := psutilnet.Interfaces()
 	if err != nil {
 		return err
 	}
 
 	ifaces := make(map[string]struct{})
-	for _, i := range ifaceList {
-		for _, a := range i.Addrs {
-			ip, _, err := net.ParseCIDR(a.Addr)
-			if err != nil {
-				return err
-			}
-			if !ip.IsLoopback() && !ip.IsUnspecified() && !strings.Contains(i.Name, "br") {
+
+	if _interface == "" {
+	OUTER_LOOP:
+		for _, i := range ifaceList {
+			for _, a := range i.Addrs {
+				ip, _, err := net.ParseCIDR(a.Addr)
+				if err != nil {
+					return err
+				}
+				if ip.IsLoopback() || ip.IsUnspecified() || strings.Contains(i.Name, "br") {
+					continue OUTER_LOOP
+				}
 				ifaces[i.Name] = struct{}{}
 				break
 			}
 		}
+	} else {
+		ifaces[_interface] = struct{}{}
 	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	ticker := time.NewTicker(_interval)
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	prev := make(map[string]psutilnet.IOCountersStat)
