@@ -1,7 +1,6 @@
 # netiobytes
 
 [![ci](https://github.com/johejo/netiobytes/workflows/ci/badge.svg?branch=main)](https://github.com/johejo/netiobytes/actions?query=workflow%3Aci)
-[![Go Report Card](https://goreportcard.com/badge/github.com/johejo/netiobytes)](https://goreportcard.com/report/github.com/johejo/netiobytes)
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/johejo/netiobytes)](https://github.com/johejo)
 
 Simple network IO measurement tool
