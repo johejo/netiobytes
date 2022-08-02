@@ -1,6 +1,6 @@
 module github.com/johejo/netiobytes
 
-go 1.16
+go 1.19
 
 require (
 	github.com/dustin/go-humanize v1.0.0
